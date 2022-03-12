@@ -1,0 +1,17 @@
+# Set root category priority to INFO and its only appender to CONSOLE.
+#log4j.rootLogger=INFO,STDOUT,DAILY
+log4j.rootLogger=INFO,DAILY
+
+# configure the console appender
+#log4j.appender.STDOUT=org.apache.log4j.ConsoleAppender
+#log4j.appender.STDOUT.layout=org.apache.log4j.PatternLayout
+#log4j.appender.STDOUT.layout.conversionPattern=%d{yyyy-MM-dd HH:mm:ss.SSS} [%p] %c:%L - %m%n
+
+# configure the daily rolling file appender
+log4j.appender.DAILY=org.apache.log4j.DailyRollingFileAppender
+#log4j.appender.DAILY.File=/home/pindev3/FOS/LOGS/PreProd/FOS_Preprod.log
+log4j.appender.DAILY.File=/www/fwmobapp/FOS/LOGS/Prod/FOS_Prod.log
+#log4j.appender.DAILY.File=D:\\Test_Logs\\FOS_Preprod.log
+log4j.appender.DAILY.DatePattern='.'yyyy-MM-dd
+log4j.appender.DAILY.layout=org.apache.log4j.PatternLayout
+log4j.appender.DAILY.layout.conversionPattern=%d{yyyy-MM-dd HH:mm:ss.SSS} [%p] %c %L : %m%n

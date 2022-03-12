@@ -1,0 +1,149 @@
+package com.FOS.Validator;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.naming.NamingException;
+
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
+import com.FOS.DBConnector.HouseKeeper;
+import com.FOS.DBConnector.ISPDBConnector;
+import com.FOS.Utils.PasswordUtils;
+
+public class LoginValidationImplementor implements LoginValidatorImpl
+{
+	final static Logger logger = LogManager.getLogger(LoginValidationImplementor.class);
+
+	/*@Override
+	public Map<String, Object> validateLogin(ISPDBConnector ispDBConnector, LoginValidator ispLoginValidator) {
+		int result = 0;
+		Map<String, Object> validateLoginResponse = new HashMap<String, Object>();
+		Connection connection = null;
+		Statement statement = null;
+		ResultSet resultSet = null;
+		try 
+		{
+			connection = ispDBConnector.getConnection();
+			statement = connection.createStatement();
+			// Checking whether user and device exists or not
+			String userSelect = "select AGENT_ID, AGENT_ACCOUNT_NO, AGENT_ACC_POID_ID0, PAYMENT_LIMIT from FOS_AGENT_MASTER where USER_ID = '"+ispLoginValidator.getUserID()+"' "
+					+ "and PASSWORD = '"+ispLoginValidator.getPassword()+"' and DEVICE_IMEI = '"+ispLoginValidator.getDeviceIMEI()+"'";
+			logger.info(userSelect);
+			resultSet = statement.executeQuery(userSelect);
+			if(resultSet.next())
+			{
+				result = 200; //Success (200)
+				validateLoginResponse.put("result", result);
+				String agentID = resultSet.getString("AGENT_ID");
+				validateLoginResponse.put("agentID", agentID);
+				validateLoginResponse.put("agentAccountNo", resultSet.getString("AGENT_ACCOUNT_NO"));
+				validateLoginResponse.put("agentAccountPOID", resultSet.getLong("AGENT_ACC_POID_ID0"));
+				validateLoginResponse.put("paymentLimit", resultSet.getDouble("PAYMENT_LIMIT"));
+				logger.info("Agent ID: "+agentID);
+			}	
+			else
+			{
+				result = 401; // (401) Unauthorized (User doesn't exist)
+				validateLoginResponse.put("result", result);
+			}	
+		} catch (ClassNotFoundException | IOException | SQLException e) {
+			logger.error("Login validation implementor: ",e);
+			result = 500; // Database Issue (Internal Server Error)
+			validateLoginResponse.put("result", result);
+		}
+		finally
+		{
+			HouseKeeper.closeResultSet(resultSet);
+			HouseKeeper.closeStatement(statement);
+			ispDBConnector.closeConnection(connection);
+		}
+		logger.info("Validation Result: "+result);
+		return validateLoginResponse;
+	}*/
+
+
+	@Override
+	public Map<String, Object> validateLogin(ISPDBConnector ispDBConnector, LoginValidator ispLoginValidator) {
+		int result = 0;
+		PasswordUtils passwordUtils = new PasswordUtils();
+		String md5Password = passwordUtils.getEncryptedMD5String(ispLoginValidator.getPassword());
+		Map<String, Object> validateLoginResponse = new HashMap<String, Object>();
+		if(md5Password != null)
+		{
+			Connection connection = null;
+			Statement statement = null;
+			ResultSet resultSet = null;
+			try 
+			{
+				connection = ispDBConnector.getConnection();
+				statement = connection.createStatement();
+				//Checking whether user and device exists or not
+				/*String userSelect = "SELECT USER_ID, POID, SUBSTR (POID_ID0, 1,INSTR(POID_ID0,' ') - 1) POID_ID0, MOBILE_NUMBER "
+						+ "FROM OAP.OAP_USER_MASTER_T WHERE USER_NAME = '"+ispLoginValidator.getUserID()+"' AND PASSWORD = '"+md5Password+"'";*/
+				
+				String userSelect = "SELECT A.ACCOUNT_NO, WS.LCO_OBJ_ID0, UM.USER_ID, UM.POID,  "+
+						"("+
+						"  CASE WHEN UM.POID_ID0 LIKE '% %' "+
+						"  THEN SUBSTR (UM.POID_ID0, 1,INSTR(UM.POID_ID0,' ') - 1) "+
+						"  ELSE "+
+						"  UM.POID_ID0 "+
+						"  END "+
+						") POID_ID0, UM.MOBILE_NUMBER, DECODE(UPPER(UM.COMPANY_NAME),'COLLECTION','1',0) APP_ACCESS "+
+						"FROM PIN.ACCOUNT_T A, PIN.PROFILE_T P, PIN.MSO_WHOLESALE_INFO_T WS, "+
+						"OAP.OAP_USER_MASTER_T UM WHERE A.ACCOUNT_NO = UM.USER_ID "+
+						"AND A.POID_ID0 = P.ACCOUNT_OBJ_ID0 AND P.POID_ID0 = WS.OBJ_ID0 "+
+						"AND UM.USER_NAME = '"+ispLoginValidator.getUserID()+"' AND UM.PASSWORD = '"+md5Password+"'";
+				
+				logger.info(userSelect);
+				resultSet = statement.executeQuery(userSelect);
+				if(resultSet.next())
+				{
+					result = 200; //Success (200)
+					validateLoginResponse.put("result", result);
+					String agentID = resultSet.getString("POID_ID0");
+					validateLoginResponse.put("agentID", agentID);
+					validateLoginResponse.put("agentAccountNo", resultSet.getString("ACCOUNT_NO"));
+					Long lcoObjID = resultSet.getLong("LCO_OBJ_ID0");
+					Long poidID = resultSet.getLong("POID_ID0");
+					validateLoginResponse.put("agentAccountPOID", lcoObjID != 0 ? lcoObjID : poidID);
+					validateLoginResponse.put("paymentLimit", 50000.00);
+					validateLoginResponse.put("POID", resultSet.getString("POID"));
+					validateLoginResponse.put("MOBILE_NUMBER", resultSet.getString("MOBILE_NUMBER"));
+					validateLoginResponse.put("APP_ACCESS", resultSet.getString("APP_ACCESS"));
+					logger.info("Agent ID: "+agentID);
+				}	
+				else
+				{
+					result = 401; // (401) Unauthorized (User doesn't exist)
+					validateLoginResponse.put("result", result);
+				}	
+			} catch (NamingException | SQLException e) {
+				logger.error("Login validation implementor: ",e);
+				result = 500; // Database Issue (Internal Server Error)
+				validateLoginResponse.put("result", result);
+			}
+			finally
+			{
+				HouseKeeper.closeResultSet(resultSet);
+				HouseKeeper.closeStatement(statement);
+				ispDBConnector.closeConnection(connection);
+			}
+			logger.info("Validation Result: "+result);
+			return validateLoginResponse;
+		}	
+		else
+		{
+			result = 400; //Bad Request
+			logger.info("Result: "+result);
+			validateLoginResponse.put("result", result);
+			return validateLoginResponse;
+		}
+
+	}
+}

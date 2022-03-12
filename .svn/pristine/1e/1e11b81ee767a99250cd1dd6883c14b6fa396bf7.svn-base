@@ -1,0 +1,76 @@
+package com.FOS.Extractor;
+
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.json.JSONObject;
+import org.json.XML;
+
+import _36._0._21._172.infranetwebsvc.services.brmbaseservices.InfranetWebServiceServiceStub;
+import _36._0._21._172.infranetwebsvc.services.brmbaseservices.InfranetWebServiceServiceStub.Opcode;
+import _36._0._21._172.infranetwebsvc.services.brmbaseservices.InfranetWebServiceServiceStub.OpcodeResponse;
+
+public class GetReceiptsExtractor 
+{
+final static Logger logger = LogManager.getLogger(GetReceiptsExtractor.class);
+	
+	private String receiptsResponse;
+	
+	public String getReceiptsResponse() {
+		return receiptsResponse;
+	}
+
+	public void setReceiptsResponse(String receiptsResponse) {
+		this.receiptsResponse = receiptsResponse;
+	}
+
+	public int extractReceiptsResult(String accountPOID)
+	{
+		int result = 0;
+		try {
+			String opCodeString = "MSO_OP_PYMT_GET_RECEIPTS";
+			StringBuffer stringBuffer = new StringBuffer();
+			stringBuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+			stringBuffer.append("<MSO_OP_PYMT_GET_RECEIPTS_inputFlist>");
+			stringBuffer.append("<FLAGS>0</FLAGS>");
+			stringBuffer.append("<POID>"+accountPOID+"</POID>");
+			stringBuffer.append("<MSO_FLD_SERVICE_TYPE>0</MSO_FLD_SERVICE_TYPE>");
+			stringBuffer.append("<PROGRAM_NAME>FOS</PROGRAM_NAME>");
+			stringBuffer.append("</MSO_OP_PYMT_GET_RECEIPTS_inputFlist>");
+			String xmlString = stringBuffer.toString();
+
+			InfranetWebServiceServiceStub stub = new InfranetWebServiceServiceStub();
+			Opcode opcode = new Opcode();
+			opcode.setOpcode(opCodeString);
+			opcode.setInputXML(xmlString);
+			opcode.setM_SchemaFile("?");
+			OpcodeResponse response = stub.opcode(opcode);
+			String responseString = response.getOpcodeReturn();
+			
+			responseString = responseString.replace("\"xmlns:brm\": \"http://xmlns.oracle.com/BRM/schemas/BusinessOpcodes\",", "");
+			responseString = responseString.replaceAll("\n", "").replace("\r", "");
+			responseString = responseString.replaceAll("brm:", "");
+			/*System.out.println("XML String :");
+			System.out.println(responseString);
+			setCustomerInfoXMLResponse(responseString);*/
+			
+			int INDENT_FACTOR = 0;
+			JSONObject xmlJSONObj = XML.toJSONObject(responseString);
+			String receiptsResponseJson = xmlJSONObj.toString(INDENT_FACTOR);
+			receiptsResponseJson = receiptsResponseJson.replace("\"xmlns:brm\": \"http://xmlns.oracle.com/BRM/schemas/BusinessOpcodes\",", "");
+			receiptsResponseJson = receiptsResponseJson.replaceAll("\n", "").replace("\r", "");
+			receiptsResponseJson = receiptsResponseJson.replaceAll("brm:", "");
+			logger.info("Receipts Before:");
+			logger.info(receiptsResponseJson);
+			logger.info("Receipts After:");
+			receiptsResponseJson = receiptsResponseJson.replace("\"RESULTS\": {", "\"RESULTS\": [{");
+			receiptsResponseJson = receiptsResponseJson.replace("\"},\"POID\":", "\"}],\"POID\":");
+			logger.info(receiptsResponseJson);
+			setReceiptsResponse(receiptsResponseJson);
+			result = 200;
+		} catch (Exception e) {
+			logger.error("Error occurred while sending SOAP Request to Server: ", e);
+			return result = 500;
+		}
+		return result;
+	}
+}

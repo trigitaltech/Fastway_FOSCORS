@@ -1,0 +1,43 @@
+#MySQL DB properties
+#MYSQL_DB_DRIVER_CLASS=com.mysql.jdbc.Driver
+#MYSQL_DB_URL=jdbc:mysql://localhost:3306/hibernate_db
+#MYSQL_DB_USERNAME=root
+#MYSQL_DB_PASSWORD=pass123abc
+ 
+#Oracle DB Properties
+#ORACLE_DB_DRIVER_CLASS=oracle.jdbc.driver.OracleDriver
+#ORACLE_DB_URL=jdbc:oracle:thin:@103.41.23.141:1521/devbrm.myfastway.in
+#ORACLE_DB_USERNAME=pinuat
+#ORACLE_DB_PASSWORD=pinuat
+
+#Oracle Reports DB Properties
+#ISP_DB_DRIVER_CLASS=oracle.jdbc.driver.OracleDriver
+#ISP_DB_URL=jdbc:oracle:thin:@103.41.23.141:1521/devbrm.myfastway.in
+#ISP_DB_USERNAME=oapuat
+#ISP_DB_PASSWORD=oapuat
+
+
+#Oracle DB Properties
+ORACLE_DB_DRIVER_CLASS=oracle.jdbc.driver.OracleDriver
+ORACLE_DB_URL=jdbc:oracle:thin:@172.21.0.35:1723:PINDB
+ORACLE_DB_USERNAME=fwapp
+ORACLE_DB_PASSWORD=fwapp
+
+#Oracle Reports DB Properties
+ISP_DB_DRIVER_CLASS=oracle.jdbc.driver.OracleDriver
+ISP_DB_URL=jdbc:oracle:thin:@172.21.0.35:1723:PINDB
+ISP_DB_USERNAME=fwapp
+ISP_DB_PASSWORD=fwapp
+
+
+#initialSize=5
+#maxActive=10
+#maxIdle=5
+#minIdle=2
+#timeBetweenEvictionRunsMillis=34000
+#minEvictableIdleTimeMillis=55000
+#validationQuery=SELECT 1
+#validationInterval=34000
+#testOnBorrow=true
+#removeAbandoned=true
+#removeAbandonedTimeout=55

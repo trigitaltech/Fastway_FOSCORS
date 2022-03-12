@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd"
+	xmlns:context="http://www.springframework.org/schema/context">
+
+	<context:annotation-config/>
+	
+	<!-- ISP Database Connector Class -->
+	<bean id="ispDBConnector" class="com.FOS.DBConnector.ISPDBConnector"/>
+	
+	<!-- Oracle PinDB Connector Class -->
+	<bean id="pinDBConnector" class="com.FOS.DBConnector.PinDBConnector"/>
+	
+	<!-- Login Extractor -->
+	<bean id="loginExtractor" class="com.FOS.Extractor.LoginExtractor"/>
+	
+	<!-- Login Validator -->
+	<bean id="loginValidator" class="com.FOS.Validator.LoginValidationImplementor"/>
+	
+	<!-- Agent Customer City Validator -->
+	<bean id="agentCustomerValidator" class="com.FOS.Validator.AgentCustomerValidator"/>
+	
+	<!-- Customer Information CATV Extractor Class -->
+	<bean id="custInfoCATVExtractor" class="com.FOS.Extractor.CustomerInfoCATVExtractor"/>
+	
+	<!-- Customer Info CATV Model Class -->	
+	<bean id="customerInfoCATVModel" class="com.FOS.Model.CustomerInfoCATVModel"></bean>
+	
+	<!-- Transaction Master Extractor Class -->	
+	<bean id="transactionExtractor" class="com.FOS.Extractor.TransactionMasterExtractor"></bean>
+	
+	<!-- Make Payment Model Class -->	
+	<bean id="makePaymentModel" class="com.FOS.Model.MakePaymentModel"></bean>
+	
+	<!-- Password Manager Model Class -->	
+	<bean id="passwordManagerModel" class="com.FOS.Model.PasswordManagerModel"></bean>
+	
+	<!-- SLC Model Class -->	
+	<bean id="slcModel" class="com.FOS.Model.SLCModel"></bean>
+	
+	<!-- Plan Model Class -->	
+	<bean id="planModel" class="com.FOS.Model.PlanModel"></bean>
+	
+	<!-- Suspend Reactivate Model Class -->	
+	<bean id="suspendReactivateModel" class="com.FOS.Model.SuspendReactivateModel"></bean>
+	
+	<!-- Reports Model Class -->	
+	<bean id="reportsModel" class="com.FOS.Model.ReportsModel"></bean>
+</beans>
