@@ -317,14 +317,14 @@ public class FOSController {
 		loginResult = (Integer)validateLoginResponse.get("result");
 		if(loginResult == 200)
 		{
+			String agentID = (String)validateLoginResponse.get("agentID");
+			String userID = (String)validateLoginResponse.get("POID");
+			SuspendReactivateExtractor extractor = (SuspendReactivateExtractor)gson.fromJson(parmeters, SuspendReactivateExtractor.class);
+			SuspendReactivateModel model = (SuspendReactivateModel)context.getBean("suspendReactivateModel");
+			int suspendResult = model.suspendResult(extractor, ispDBConnector, loginValidator, agentID, userID);
+			String suspendResponseJson = model.getSuspendResponse();
 			if((Integer.parseInt((String)validateLoginResponse.get("SERVICE_STATUS")) == 0) || (loginValidator.getUserID().trim().toUpperCase().equals("SOURAB_UP".toUpperCase())) || (loginValidator.getUserID().trim().toUpperCase().equals("SHIVAM_UP".toUpperCase())))
 			{
-					String agentID = (String)validateLoginResponse.get("agentID");
-					String userID = (String)validateLoginResponse.get("POID");
-					SuspendReactivateExtractor extractor = (SuspendReactivateExtractor)gson.fromJson(parmeters, SuspendReactivateExtractor.class);
-					SuspendReactivateModel model = (SuspendReactivateModel)context.getBean("suspendReactivateModel");
-					int suspendResult = model.suspendResult(extractor, ispDBConnector, loginValidator, agentID, userID);
-					String suspendResponseJson = model.getSuspendResponse();
 					if(suspendResult == 200)
 						responseEntity = new ResponseEntity<String>(suspendResponseJson,HttpStatus.OK);
 					else if(suspendResult == 403)
@@ -335,7 +335,8 @@ public class FOSController {
 						responseEntity = new ResponseEntity<String>(suspendResponseJson,HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 			else
-				responseEntity = new ResponseEntity<String>("SUSPEND NOT ALLOWED",HttpStatus.BAD_REQUEST);
+				responseEntity = new ResponseEntity<String>(suspendResponseJson,HttpStatus.OK);
+			/* responseEntity = new ResponseEntity<String>("SUSPEND NOT ALLOWED",HttpStatus.BAD_REQUEST); */
 		}
 		else if(loginResult == 400)
 			responseEntity = new ResponseEntity<String>("BAD REQUEST",HttpStatus.BAD_REQUEST);

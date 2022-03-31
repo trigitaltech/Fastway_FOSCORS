@@ -63,11 +63,20 @@ public class ReportsModel {
 
 	public int totalSubscriberCountResult(ISPDBConnector ispDBConnector, String agentAccountPOID) {
 		int result = 200;
-		/*List<Map<String, String>> totalSubscriberCountList = null;
+		List<Map<String, String>> totalSubscriberCountList = null;
 		Gson gson = new Gson();
-		String sql = "SELECT DECODE(SERVICE_STATUS,10100,'ACTIVE',10102,'SUSPENDED',10103,'TERMINATED') STATUS, COUNT(1) COUNT_OF_CUSTOMER "+
-				"FROM (SELECT DISTINCT CUSTOMER_ACCOUNT_NO,SERVICE_STATUS,LCO_ACCOUNT_NO, LCO_OBJ_ID0,PP_TYPE,NETWORK_NODE,CONNECTION_TYPE FROM RPT_BASE_FWAPP_LCO_T "+
-				"WHERE LCO_OBJ_ID0="+agentAccountPOID+") GROUP BY SERVICE_STATUS";
+		
+		/* String sql =
+		 * "SELECT DECODE(SERVICE_STATUS,10100,'ACTIVE',10102,'SUSPENDED',10103,'TERMINATED') STATUS, COUNT(1) COUNT_OF_CUSTOMER " 
+		 * + "FROM (SELECT DISTINCT CUSTOMER_ACCOUNT_NO,SERVICE_STATUS,LCO_ACCOUNT_NO, LCO_OBJ_ID0,PP_TYPE,NETWORK_NODE,CONNECTION_TYPE FROM RPT_BASE_FWAPP_LCO_T "
+		 * + "WHERE LCO_OBJ_ID0="+agentAccountPOID+") GROUP BY SERVICE_STATUS"; */
+		
+		String sql ="select DECODE(S.STATUS,10100,'ACTIVE',10102,'SUSPENDED',10103,'TERMINATED') STATUS, COUNT(1) COUNT_OF_CUSTOMER"
+				+ " from pin.service_t@prodpindb s,pin.profile_t@prodpindb p,pin.profile_customer_care_t@prodpindb cc "
+				+ " where cc.lco_obj_id0 ="+agentAccountPOID+" "
+				+ " and cc.obj_id0 = p.poid_id0 and p.account_obj_id0 = s.account_obj_id0 "
+				+ " group  by status";
+		
 		Connection connection = null;
 		Statement statement = null;
 		ResultSet resultSet = null;
@@ -88,7 +97,7 @@ public class ReportsModel {
 			HouseKeeper.closeResultSet(resultSet);
 			HouseKeeper.closeStatement(statement);
 			ispDBConnector.closeConnection(connection);
-		}*/
+		}
 		return result;
 	}
 
@@ -96,9 +105,20 @@ public class ReportsModel {
 		int result = 200;
 		List<Map<String, String>> subscriberWiseActivePkgCountList = null;
 		Gson gson = new Gson();
-		String sql = "SELECT BASE_PLAN_NAME,COUNT(1) PACKAGE_COUNT FROM RPT_BASE_FWAPP_LCO_T "+
-				"WHERE LCO_OBJ_ID0="+agentAccountPOID+" AND SERVICE_STATUS = 10100 "+
-				"AND PLAN_STATUS = 1 GROUP BY BASE_PLAN_NAME";
+		
+		/* String sql =
+		 * "SELECT BASE_PLAN_NAME,COUNT(1) PACKAGE_COUNT FROM RPT_BASE_FWAPP_LCO_T "+
+		 * "WHERE LCO_OBJ_ID0="+agentAccountPOID+" AND SERVICE_STATUS = 10100 "+
+		 * "AND PLAN_STATUS = 1 GROUP BY BASE_PLAN_NAME"; */
+		
+		String sql ="select pl.name BASE_PLAN_NAME, count(1) PACKAGE_COUNT from pin.plan_t@prodpindb pl, "
+				+ " pin.product_t@prodpindb pr, pin.purchased_product_t@prodpindb pp, "
+				+ " pin.profile_customer_care_t@prodpindb pcc, pin.profile_t@prodpindb pf "
+				+ " where pp.status = 1 and pp.product_obj_id0 = pr.poid_id0 and pr.priority >=100 and pr.priority <140 "
+				+ " and pl.poid_id0 = pp.plan_obj_id0 and pcc.lco_obj_id0 = " +agentAccountPOID+" "
+				+ " and pcc.obj_id0 = pf.poid_id0 and pf.account_obj_id0 = pp.account_obj_id0 "
+				+ " group by pl.name";
+		
 		Connection connection = null;
 		Statement statement = null;
 		ResultSet resultSet = null;
@@ -123,7 +143,7 @@ public class ReportsModel {
 		return result;
 	}
 
-	public int dailyAndWeeklyCollectionReportResult(PinDBConnector pinDBConnector, String agentAccountPOID) {
+	public int dailyAndWeeklyCollectionReportResult(PinDBConnector pinDBConnector, String userID) {
 		int result = 200;
 		List<Map<String, String>> dailyAndWeeklyCollectionReportList = null;
 		Gson gson = new Gson();
@@ -143,7 +163,7 @@ public class ReportsModel {
 		String sql = "SELECT TO_CHAR(INF2ORA(R.PAYMENT_DATE),'DD-MON-YYYY') PAYMENT_DATE, "+
 				"COUNT(0) NO_OF_PAYMENTS, SUM(AMOUNT) TOTAL_AMOUNT "+
 				"FROM PIN.MSO_COLLECTION_REPORT_RPT@PRODPINDB R "+
-				"WHERE ENTERED_BY= (SELECT ACCOUNT_NO FROM PIN.ACCOUNT_T@PRODPINDB WHERE POID_ID0 = "+agentAccountPOID+") "+
+				"WHERE ENTERED_BY= '"+userID+"'  "+
 				"AND R.PAYMENT_DATE >= ORA2INF(TO_CHAR(SYSDATE-7, 'DD-MON-YYYY')) "+
 				"GROUP BY R.PAYMENT_DATE";
 		

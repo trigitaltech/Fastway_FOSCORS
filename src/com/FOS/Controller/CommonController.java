@@ -198,9 +198,10 @@ public class CommonController {
 			int reportsResult = reportsModel.totalSubscriberCountResult(ispDBConnector, agentAccountPOID);
 			if(reportsResult == 200)
 			{
-				//String totalSubscriberCountResponse = reportsModel.getTotalSubscriberCountResponse();
-				//responseEntity = new ResponseEntity<String>(totalSubscriberCountResponse,HttpStatus.OK);
-				responseEntity = new ResponseEntity<String>("NO DATA",HttpStatus.INTERNAL_SERVER_ERROR);
+				String totalSubscriberCountResponse = reportsModel.getTotalSubscriberCountResponse();
+				responseEntity = new ResponseEntity<String>(totalSubscriberCountResponse,HttpStatus.OK);
+				
+				/* responseEntity = new ResponseEntity<String>("NO DATA",HttpStatus.INTERNAL_SERVER_ERROR); */
 			}
 			else
 				responseEntity = new ResponseEntity<String>("INTERNAL SERVER ERROR",HttpStatus.INTERNAL_SERVER_ERROR);
@@ -269,8 +270,8 @@ public class CommonController {
 		if(loginResult == 200)
 		{
 			ReportsModel reportsModel = (ReportsModel)context.getBean("reportsModel");
-			String agentAccountPOID = Long.toString((Long)validateLoginResponse.get("agentAccountPOID"));
-			int reportsResult = reportsModel.dailyAndWeeklyCollectionReportResult(pinDBConnector, agentAccountPOID);
+			String userID = ((String)validateLoginResponse.get("USER_ID"));
+			int reportsResult = reportsModel.dailyAndWeeklyCollectionReportResult(pinDBConnector, userID);
 			if(reportsResult == 200)
 			{
 				String dailyAndWeeklyCollectionReportResponse = reportsModel.getDailyAndWeeklyCollectionReportResponse();
